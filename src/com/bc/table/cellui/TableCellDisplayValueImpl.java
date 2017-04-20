@@ -41,44 +41,45 @@ public class TableCellDisplayValueImpl implements TableCellDisplayValue {
     @Override
     public Object fromDisplayValue(JTable table, Component component, Object displayValue, int row, int column) {
         Object output = displayValue;
+        final String sval = displayValue.toString();
         final Class columnClass = table.getColumnClass(column);
-        if(displayValue == null) {
+        if(displayValue == null || sval.isEmpty()) {
             output = null;
         }else if(this.subClassTest.apply(columnClass, Date.class)) {
             if(this.dateFormat != null && !(displayValue instanceof Date)) {
                 try{
-                    output = this.dateFormat.parse(displayValue.toString());
+                    output = this.dateFormat.parse(sval);
                 }catch(ParseException e) {
                     throw new RuntimeException();
                 }
             }
         }else if(columnClass == Boolean.class || columnClass == boolean.class) {
             if(!(displayValue instanceof Boolean)) {
-                output = Boolean.valueOf(displayValue.toString());
+                output = Boolean.valueOf(sval);
             }
         }else if(columnClass == Long.class || columnClass == long.class) {
             if(!(displayValue instanceof Long)) {
-                output = Long.valueOf(displayValue.toString());
+                output = Long.valueOf(sval);
             }
         }else if(columnClass == Integer.class || columnClass == int.class) {
             if(!(displayValue instanceof Integer)) {
-                output = Integer.valueOf(displayValue.toString());
+                output = Integer.valueOf(sval);
             }
         }else if(columnClass == Short.class || columnClass == short.class) {
             if(!(displayValue instanceof Short)) {
-                output = Short.valueOf(displayValue.toString());
+                output = Short.valueOf(sval);
             }
         }else if(columnClass == Double.class || columnClass == double.class) {
             if(!(displayValue instanceof Double)) {
-                output = Double.valueOf(displayValue.toString());
+                output = Double.valueOf(sval);
             }
         }else if(columnClass == Float.class || columnClass == float.class) {
             if(!(displayValue instanceof Float)) {
-                output = Float.valueOf(displayValue.toString());
+                output = Float.valueOf(sval);
             }
         }else if(columnClass == BigDecimal.class) {
             if(!(displayValue instanceof BigDecimal)) {
-                output = BigDecimal.valueOf(Double.parseDouble(displayValue.toString()));
+                output = BigDecimal.valueOf(Double.parseDouble(sval));
             }
         }else{
             output = displayValue;
