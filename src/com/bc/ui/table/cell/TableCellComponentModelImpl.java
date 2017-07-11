@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
 import java.awt.ItemSelectable;
 import java.util.Objects;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.text.JTextComponent;
@@ -30,14 +31,14 @@ import javax.swing.text.JTextComponent;
  */
 public class TableCellComponentModelImpl implements TableCellComponentModel {
 
-    private final TableCellDisplayValue cellDisplayValue;
+    private final TableCellDisplayFormat cellDisplayFormat;
     
     public TableCellComponentModelImpl() { 
-        this(TableCellDisplayValue.NO_OP);
+        this(TableCellDisplayFormat.NO_OP);
     }
     
-    public TableCellComponentModelImpl(TableCellDisplayValue cellDisplayValue) { 
-        this.cellDisplayValue = cellDisplayValue;
+    public TableCellComponentModelImpl(TableCellDisplayFormat cellDisplayFormat) { 
+        this.cellDisplayFormat = cellDisplayFormat;
     }
     
     @Override
@@ -47,7 +48,7 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         
         final Object value = this.getValue(component);
         
-        final Object output = this.cellDisplayValue.fromDisplayValue(table, component, value, row, column);
+        final Object output = this.cellDisplayFormat.fromDisplayValue(table, component, value, row, column);
                 
         return output;        
     }
@@ -59,6 +60,8 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         final Object value;
         if(component instanceof JTextComponent) {
             value = ((JTextComponent)component).getText();
+        }else if(component instanceof JLabel) {
+            value = ((JLabel)component).getText();
         }else if(component instanceof AbstractButton) {
             value = ((AbstractButton)component).isSelected();
         }else if(component instanceof ItemSelectable) {
@@ -79,8 +82,8 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
             boolean isSelected, boolean hasFocus, int row, int column) {
         
         Objects.requireNonNull(component);
-        
-        value = this.cellDisplayValue.toDisplayValue(table, component, value, isSelected, hasFocus, row, column);
+
+        value = this.cellDisplayFormat.toDisplayValue(table, component, value, isSelected, hasFocus, row, column);
         
         this.setValue(component, value);
     }
@@ -91,6 +94,8 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         
         if(component instanceof JTextComponent) {
             ((JTextComponent)component).setText(value==null?null:String.valueOf(value));
+        }else if(component instanceof JLabel) {
+            ((JLabel)component).setText(value==null?null:String.valueOf(value));
         }else if(component instanceof AbstractButton) {
             ((AbstractButton)component).setSelected(Boolean.valueOf(String.valueOf(value)));
         }else if(component instanceof JComboBox) {

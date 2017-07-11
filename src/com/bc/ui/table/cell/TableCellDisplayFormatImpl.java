@@ -14,38 +14,45 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.function.BiFunction;
 import javax.swing.JTable;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Apr 8, 2017 12:25:35 AM
  */
-public class TableCellDisplayValueImpl implements TableCellDisplayValue {
+public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
 
     private final DateFormat dateFormat;
     
-    private final BiFunction<Class, Class, Boolean> subClassTest;
-
-    public TableCellDisplayValueImpl(DateFormat dateFormat) {
+    public TableCellDisplayFormatImpl() {
+        this(null);
+    }
+    
+    public TableCellDisplayFormatImpl(DateFormat dateFormat) {
         this.dateFormat = dateFormat;
-        this.subClassTest = new TestSubClass();
     }
     
     @Override
     public Object fromDisplayValue(JTable table, Component component, Object displayValue, int row, int column) {
+        
+        final Class columnClass = this.getColumnClassWithHeaderRowAtMinusOne(table, row, column);
+        
+        return this.fromDisplayValue(columnClass, displayValue, row, column);
+    }
+
+    @Override
+    public Object fromDisplayValue(Class columnClass, Object displayValue, int row, int column) {
         Object output = displayValue;
-        final String sval = displayValue.toString();
-        final Class columnClass = table.getColumnClass(column);
-        if(displayValue == null || sval.isEmpty()) {
+        final String sval = displayValue == null ? null : displayValue.toString();
+        if(displayValue == null || sval == null || sval.isEmpty()) {
             output = null;
-        }else if(this.subClassTest.apply(columnClass, Date.class)) {
+        }else if(Date.class.isAssignableFrom(columnClass)) {
             if(this.dateFormat != null && !(displayValue instanceof Date)) {
                 try{
                     output = this.dateFormat.parse(sval);
@@ -90,16 +97,29 @@ public class TableCellDisplayValueImpl implements TableCellDisplayValue {
     @Override
     public Object toDisplayValue(JTable table, Component component, Object value, 
             boolean isSelected, boolean hasFocus, int row, int column) {
-        Object output = value;
-        final Class columnClass = table.getColumnClass(column);
-        if(columnClass == Date.class) {
-            if(this.dateFormat != null && (value instanceof Date)) {
+        
+        final Class columnClass = this.getColumnClassWithHeaderRowAtMinusOne(table, row, column);
+        
+        return this.toDisplayValue(columnClass, value, row, column);
+    }
+    
+    public Class getColumnClassWithHeaderRowAtMinusOne(JTable table, int row, int column) {
+        return row == -1 ? String.class : table.getColumnClass(column);
+    }
+
+    @Override
+    public Object toDisplayValue(Class columnClass, Object value, int row, int column) {
+        final Object output;
+        if(Date.class.isAssignableFrom(columnClass)) {
+            if(this.dateFormat != null && value != null) {
                 output = new Date(((Date)value).getTime()) {
                     @Override
                     public String toString() {
                         return dateFormat.format(this);
                     }
                 };
+            }else{
+                output = value;
             }
         }else{
             output = value;

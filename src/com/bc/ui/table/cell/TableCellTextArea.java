@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
-import java.awt.Component;
-import javax.swing.JTable;
+import javax.swing.JTextArea;
 
 /**
- * @author Chinomso Bassey Ikwuagwu on Apr 5, 2017 9:42:55 PM
+ * @author Chinomso Bassey Ikwuagwu on Mar 4, 2017 3:16:47 PM
  */
-public interface TableCellComponentModel {
-    
-    Object getValue(JTable table, Component component, int row, int column);
+public class TableCellTextArea extends JTextArea {
 
-    void setValue(JTable table, Component component, Object value, 
-            boolean isSelected, boolean hasFocus, int row, int column);
+    public TableCellTextArea() {
+        this.setLineWrap(true);
+        this.setWrapStyleWord(true);
+        this.setOpaque(true);        
+    }
 }

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JTable;
 
 /**
@@ -25,9 +26,11 @@ import javax.swing.JTable;
 public class TableCellUIStateImpl implements TableCellUIState {
 
     @Override
-    public void update(JTable table, Component cellUI, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public void updateState(JTable table, Component cellUI, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         
-        cellUI.setFont(table.getFont());
+        final Font font = table.getFont();
+        
+        cellUI.setFont(font); 
 
         if (isSelected) {
             cellUI.setForeground(table.getSelectionForeground());

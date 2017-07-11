@@ -14,44 +14,41 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
-import java.awt.Dimension;
+import java.util.Objects;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Apr 7, 2017 5:12:19 PM
  */
-public class TableCellRendererImpl implements TableCellRenderer{
+public class TableCellRendererForComponent implements TableCellRenderer{
 
     private final Component component;
-    private final TableCellComponentModel tableCellComponentModel; 
-    private final TableCellUIState tableCellUIState;
-    private final TableCellSize tableCellSize;
+    private final TableCellComponentFormat cellComponentFormat;
 
-    public TableCellRendererImpl(
+    public TableCellRendererForComponent(
             Component component, TableCellComponentModel tableCellComponentModel, 
             TableCellUIState tableCellUIState, TableCellSize tableCellSize) {
-        this.component = component;
-        this.tableCellComponentModel = tableCellComponentModel;
-        this.tableCellUIState = tableCellUIState;
-        this.tableCellSize = tableCellSize;
+        this(component, new TableCellComponentFormatImpl(
+                tableCellComponentModel, tableCellUIState, tableCellSize
+        ));
     }
 
+    public TableCellRendererForComponent(
+            Component component, TableCellComponentFormat fmt) {
+        this.component = Objects.requireNonNull(component);
+        this.cellComponentFormat = Objects.requireNonNull(fmt);
+    }
+    
     @Override
     public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus,
             int row, int column) {
         
-        tableCellUIState.update(table, component, value, isSelected, hasFocus, row, column);
-        
-        final Dimension dim = this.tableCellSize.getPreferedSize(table, value, isSelected, hasFocus, row, column);
-        
-        this.component.setPreferredSize(dim);
-        
-        this.tableCellComponentModel.setValue(table, component, value, isSelected, hasFocus, row, column);
+        cellComponentFormat.format(table, component, value, isSelected, hasFocus, row, column);
         
         return component;
     }
@@ -60,15 +57,7 @@ public class TableCellRendererImpl implements TableCellRenderer{
         return component;
     }
 
-    public TableCellComponentModel getTableCellComponentModel() {
-        return tableCellComponentModel;
-    }
-
-    public TableCellUIState getTableCellUIState() {
-        return tableCellUIState;
-    }
-
-    public TableCellSize getTableCellSize() {
-        return tableCellSize;
+    public TableCellComponentFormat getCellComponentFormat() {
+        return cellComponentFormat;
     }
 }

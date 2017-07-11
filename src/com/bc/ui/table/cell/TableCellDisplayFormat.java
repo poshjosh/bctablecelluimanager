@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
 import javax.swing.JTable;
@@ -23,12 +23,16 @@ import javax.swing.JTable;
  * @author Chinomso Bassey Ikwuagwu on Apr 8, 2017 12:07:36 AM
  * @param <T> The type of the display value
  */
-public interface TableCellDisplayValue<T> {
+public interface TableCellDisplayFormat<T> {
     
-    TableCellDisplayValue NO_OP = new TableCellDisplayValue() {
+    TableCellDisplayFormat NO_OP = new TableCellDisplayFormat() {
         @Override
         public Object fromDisplayValue(JTable table, Component component, 
                 Object displayValue, int row, int column) {
+            return displayValue;
+        }
+        @Override
+        public Object fromDisplayValue(Class columnClass, Object displayValue, int row, int column) {
             return displayValue;
         }
         @Override
@@ -36,10 +40,18 @@ public interface TableCellDisplayValue<T> {
                 boolean isSelected, boolean hasFocus, int row, int column) {
             return value;
         }
+        @Override
+        public Object toDisplayValue(Class columnClass, Object value, int row, int column) {
+            return value;
+        }
     };
 
     Object fromDisplayValue(JTable table, Component component, T displayValue, int row, int column);
     
+    Object fromDisplayValue(Class columnClass, T displayValue, int row, int column);
+    
     T toDisplayValue(JTable table, Component component, Object value, 
             boolean isSelected, boolean hasFocus, int row, int column);
+
+    T toDisplayValue(Class columnClass, Object value, int row, int column);
 }

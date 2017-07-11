@@ -14,116 +14,125 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Dimension;
 import java.text.DateFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Mar 18, 2017 3:18:17 PM
  */
 public class TableCellUIUpdaterImpl implements TableCellUIUpdater{
 
-    private int minCellHeight;
-    private int maxCellHeight;
+    private int minCellHeight = 0;
+    private int maxCellHeight = Integer.MAX_VALUE;
     private DateFormat dateFormat;
     private Dimension preferredSize;
     private ColumnWidths columnWidths;
-    private JTable table;
-    private TableModel tableModel;
 
     private TableCellUIState cellUIState;
     
     private TableCellSize cellSize;
     
-    private TableCellDisplayValue cellDisplayValue;
+    private TableCellDisplayFormat cellDisplayFormat;
 
     private TableCellUIFactory cellUIFactory;
     
     private TableCellSizeManager cellSizeManager;
     
-    public TableCellUIUpdaterImpl() {
-        this.initDefaults();
-    }
+    public TableCellUIUpdaterImpl() { }
     
-    private void initDefaults() {
+    @Override
+    public void update(JTable table) {
 
-        if(this.table == null) {
-            this.table = new JTable();
+        Objects.requireNonNull(table);
+        
+        if(preferredSize != null) {
+            table.setPreferredSize(preferredSize);
         }
         
+        if(this.cellSizeManager == null) {
+            
+            if(this.columnWidths == null) {
+                this.columnWidths = new ColumnWidthsImpl();
+            }
+            
+            this.cellSizeManager = new TableCellSizeManagerImpl(columnWidths);
+        }
+
         if(this.cellUIFactory == null) {
             
             if(this.cellUIState == null) {
                 this.cellUIState = new TableCellUIStateImpl();
             }
 
+            if(this.cellDisplayFormat == null) {
+                this.cellDisplayFormat = new TableCellDisplayFormatImpl(dateFormat);
+            }
+            
             if(this.cellSize == null) {
-                
-                this.maxCellHeight = 15;
-                this.maxCellHeight = 150;
-
-                this.cellSize = new TableCellSizeImpl(minCellHeight, maxCellHeight);
+                this.cellSize = new TableCellSizeImpl(cellDisplayFormat, minCellHeight, maxCellHeight);
             }
             
-            if(this.cellDisplayValue == null) {
-                this.cellDisplayValue = new TableCellDisplayValueImpl(dateFormat);
-            }
-            
-            this.cellUIFactory = new TableCellUIFactoryImpl(cellUIState, cellSize, cellDisplayValue);
+            this.cellUIFactory = new TableCellUIFactoryImpl(
+                    cellUIState, cellSize, cellDisplayFormat, cellSizeManager);
         }
         
-        if(this.cellSizeManager == null) {
-            this.cellSizeManager = new TableCellSizeManagerImpl();
-        }
-    }
-
-    @Override
-    public JTable update() {
+        table.getTableHeader().setDefaultRenderer(new TableCellRendererForHeaderRenderer(
+                table.getTableHeader().getDefaultRenderer(),
+                cellUIFactory.getTableCellComponentFormat()
+        ));
         
-        if(preferredSize != null) {
-            table.setPreferredSize(preferredSize);
-        }
+        final Map<Class, TableCellRenderer> renderers = new HashMap();
+        final Map<Class, TableCellEditor> editors = new HashMap();
         
-        if(tableModel != null) {
-            table.setModel(tableModel);
-        }else{
-            tableModel = table.getModel();
-        }
-        
-        if(this.columnWidths == null) {
-            this.columnWidths = new ColumnWidthsImpl(tableModel);
-        }
+        final TableCellComponentFormat shareAcrossCells = cellUIFactory.getTableCellComponentFormat();
         
         for(int col=0; col<table.getColumnCount(); col++) {
             
             final Class colClass = table.getColumnClass(col);
             
-            final TableCellRenderer cellRenderer = cellUIFactory.getRenderer(col);
+            if(renderers.get(colClass) == null) {
+//                final TableCellRenderer renderer = new TableCellRendererForRenderer(
+//                    table.getDefaultRenderer(colClass), shareAcrossCells
+//                );
+                final TableCellRenderer renderer = new TableCellRendererForComponent(
+                    cellUIFactory.getRendererComponent(col), shareAcrossCells
+                );
+                renderers.put(colClass, renderer);
+                table.setDefaultRenderer(colClass, renderer);
+            }
             
-            table.setDefaultRenderer(colClass, cellRenderer);
+            if(editors.get(colClass) == null) {
+//                final TableCellEditor editor = new TableCellEditorForEditor(
+//                    table.getDefaultEditor(colClass), shareAcrossCells
+//                );
+                final TableCellEditor editor = new TableCellEditorForComponent(
+                    cellUIFactory.getEditorComponent(col), shareAcrossCells
+                );
+                editors.put(colClass, editor);
+                table.setDefaultEditor(colClass, editor);
+            }
             
-            final TableCellEditor cellEditor = cellUIFactory.getEditor(col);
-            
-            table.setDefaultEditor(colClass, cellEditor);
-            
-//System.out.println("Col: "+col+", class: "+colClass+", editor type: "+cellEditor.getClass().getName());
+//System.out.println("Col: "+col+", class: "+colClass+
+///        ", editor type: "+cellEditor.getClass().getName()+
+//        ", renderer type: "+cellRenderer.getClass().getName()+"\t@"+this.getClass());
         }
         
-        this.cellSizeManager.updateCellSizes(table, columnWidths, table.getPreferredSize().getWidth());
+        this.cellSizeManager.update(table, 0, table.getRowCount());
         
         final UpdateRowHeightsTableAndColumnModelListener listener = 
                 new UpdateRowHeightsTableAndColumnModelListener(table, this.cellSizeManager);
         
-        tableModel.addTableModelListener(listener);
+        table.getModel().addTableModelListener(listener);
         
         table.getColumnModel().addColumnModelListener(listener);
-        
-        return table;
     }
     
     @Override
@@ -139,8 +148,8 @@ public class TableCellUIUpdaterImpl implements TableCellUIUpdater{
     }
 
     @Override
-    public TableCellUIUpdater cellDisplayValue(TableCellDisplayValue cellDisplayValue) {
-        this.cellDisplayValue = cellDisplayValue;
+    public TableCellUIUpdater cellDisplayValue(TableCellDisplayFormat cellDisplayValue) {
+        this.cellDisplayFormat = cellDisplayValue;
         return this;
     }
 
@@ -186,18 +195,6 @@ public class TableCellUIUpdaterImpl implements TableCellUIUpdater{
         return this;
     }
 
-    @Override
-    public TableCellUIUpdater table(JTable table) {
-        this.table = table;
-        return this;
-    }
-
-    @Override
-    public TableCellUIUpdater tableModel(TableModel tableModel) {
-        this.tableModel = tableModel;
-        return this;
-    }
-
     public int getMinCellHeight() {
         return minCellHeight;
     }
@@ -212,14 +209,6 @@ public class TableCellUIUpdaterImpl implements TableCellUIUpdater{
 
     public ColumnWidths getColumnWidths() {
         return columnWidths;
-    }
-
-    public JTable getTable() {
-        return table;
-    }
-
-    public TableModel getTableModel() {
-        return tableModel;
     }
 
     public TableCellUIState getCellUIState() {

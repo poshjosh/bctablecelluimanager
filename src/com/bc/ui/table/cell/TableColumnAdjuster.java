@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.*;
 import java.awt.event.*;

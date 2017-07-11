@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import javax.swing.JTable;
 
@@ -23,9 +23,7 @@ import javax.swing.JTable;
  */
 public interface TableCellSizeManager {
 
-    void updateCellSizes(JTable table, ColumnWidths columnWidths, Double tableWidth);
-    
-    void updateColumnWidths(JTable table, ColumnWidths columnWidths, Double tableWidth);
+    void update(JTable table, int firstRow, int lastRow);
     
     /*
      * http://stackoverflow.com/questions/21723025/how-to-set-the-rowheight-dynamically-in-a-jtable
@@ -34,5 +32,7 @@ public interface TableCellSizeManager {
      * to determine the rendered height. After your table is populated with
      * data you may call this method.
      */
-    void updateRowHeights(JTable table, final int first, final int last);
+    void updateRowHeights(JTable table, int firstRow, int lastRow);
+
+    void updateColumnWidths(JTable table);
 }

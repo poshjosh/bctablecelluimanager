@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.util.Objects;
 import java.util.logging.Level;
@@ -45,7 +45,8 @@ public class UpdateRowHeightsTableAndColumnModelListener
     
     private final TableCellSizeManager tableCellSizeManager;
 
-    public UpdateRowHeightsTableAndColumnModelListener(JTable table, TableCellSizeManager tableCellSizeManager) {
+    public UpdateRowHeightsTableAndColumnModelListener(
+            JTable table, TableCellSizeManager tableCellSizeManager) {
         this.table = Objects.requireNonNull(table);
         this.tableCellSizeManager = Objects.requireNonNull(tableCellSizeManager);
     }
@@ -71,10 +72,10 @@ public class UpdateRowHeightsTableAndColumnModelListener
         }
         
         if(SwingUtilities.isEventDispatchThread()) {
-            this.tableCellSizeManager.updateRowHeights(table, first, last);
+            this.tableCellSizeManager.update(table, first, last);
         } else {
             SwingUtilities.invokeLater(() -> {
-                this.tableCellSizeManager.updateRowHeights(table, first, last);
+                this.tableCellSizeManager.update(table, first, last);
             });
         }
     }

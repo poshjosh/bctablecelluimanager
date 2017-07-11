@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
-import java.awt.Dimension;
+import java.awt.Component;
 import javax.swing.JTable;
 
 /**
- * @author Chinomso Bassey Ikwuagwu on Mar 4, 2017 3:10:25 PM
+ * @author Chinomso Bassey Ikwuagwu on Apr 5, 2017 9:42:55 PM
  */
-public interface TableCellSize {
+public interface TableCellComponentModel {
+    
+    Object getValue(JTable table, Component component, int row, int column);
 
-    int computeCellHeight(JTable table, Object value, int row, int column, int cellWidth, int minRowHeight, int maxRowHeight);
-
-    Dimension getPreferedSize(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column);
-
+    void setValue(JTable table, Component component, Object value, 
+            boolean isSelected, boolean hasFocus, int row, int column);
 }

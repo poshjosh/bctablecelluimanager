@@ -1,7 +1,13 @@
 package com.bc.table.cellui;
 
+import com.bc.ui.table.cell.TableCellUIUpdaterImpl;
+import com.bc.ui.table.cell.TableCellUIFactoryImpl;
+import com.bc.ui.table.cell.TableCellUIFactory;
+import com.bc.ui.table.cell.TableCellUIUpdater;
+import com.bc.ui.table.cell.TableCellTextArea;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JCheckBox;
@@ -20,6 +26,14 @@ public class Bctablecelluimanager {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        
+        final Font font = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+        new Bctablecelluimanager().buildAndDisplay(new Dimension(700, 400), font);
+        
+//        new Bctablecelluimanager().buildAndDisplay(new Dimension(500, 600), font);
+    }
+
+    public void buildAndDisplay(Dimension tablePreferredSize, Font font) {
         
         final Object [] columnNames = {"Ser", "Boolean", "Short Text", "Date", "Long Text", "Remarks"};
         final Object [][] data = {
@@ -49,13 +63,9 @@ public class Bctablecelluimanager {
             }
         };
         
-        final ColumnWidths columnWidths = new ColumnWidthsImpl(tableModel);
-        
         final JTable table = new JTable(tableModel);
-        
+        table.setFont(font);
         final JScrollPane scrolls = new JScrollPane(table);
-        
-        final Dimension tablePreferredSize = new Dimension(700, 500);
         
         table.setPreferredScrollableViewportSize(tablePreferredSize);
         
@@ -72,7 +82,7 @@ public class Bctablecelluimanager {
         final SimpleDateFormat dateFormat = new SimpleDateFormat();
         dateFormat.applyLocalizedPattern(datePattern);
         
-        final TableCellUIFactory cellUIFactory = new TableCellUIFactoryImpl(dateFormat, 15, 150){
+        final TableCellUIFactory cellUIFactory = new TableCellUIFactoryImpl(0, Integer.MAX_VALUE, dateFormat){
             @Override
             public Component getComponent(int columnIndex) {
                 final Class columnType = tableModel.getColumnClass(columnIndex);
@@ -86,11 +96,9 @@ public class Bctablecelluimanager {
         
         final TableCellUIUpdater updater = new TableCellUIUpdaterImpl();
         
-        updater.table(table)
-                .columnWidths(columnWidths)
-                .cellUIFactory(cellUIFactory)
-                .update();
-
+//System.out.println("BEFORE Table size: "+table.getSize()+" "+Bctablecelluimanager.class.getName());        
+        updater.cellUIFactory(cellUIFactory).update(table);
+//System.out.println(" AFTER Table size: "+table.getSize()+" "+Bctablecelluimanager.class.getName());        
         frame.setVisible(true);
     }
 }

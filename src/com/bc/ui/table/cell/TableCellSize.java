@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
-import javax.swing.JTextArea;
+import java.awt.Dimension;
+import javax.swing.JTable;
 
 /**
- * @author Chinomso Bassey Ikwuagwu on Mar 4, 2017 3:16:47 PM
+ * @author Chinomso Bassey Ikwuagwu on Mar 4, 2017 3:10:25 PM
  */
-public class TableCellTextArea extends JTextArea {
+public interface TableCellSize {
 
-    public TableCellTextArea() {
-        this.setLineWrap(true);
-        this.setWrapStyleWord(true);
-        this.setOpaque(true);        
-    }
+    int computeCellHeight(JTable table, Object value, int row, int column, int cellWidth, int minRowHeight, int maxRowHeight);
+
+    Dimension getPreferedSize(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column);
 }

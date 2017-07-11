@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Component;
 import javax.swing.table.TableCellEditor;
@@ -25,15 +25,25 @@ import javax.swing.table.TableCellRenderer;
  */
 public interface TableCellUIFactory {
     
+    TableCellComponentFormat getTableCellComponentFormat();
+    
+    TableCellSizeManager getTableCellSizeManager();
+    
     Component getRendererComponent(int columnIndex);
+    
+    Component getHeaderRendererComponent(int columnIndex);
     
     Component getEditorComponent(int columnIndex);
     
     TableCellComponentModel getRendererComponentModel(int columnIndex);
     
+    TableCellComponentModel getHeaderRendererComponentModel(int columnIndex);
+    
     TableCellComponentModel getEditorComponentModel(int columnIndex);
 
     TableCellRenderer getRenderer(int columnIndex);
+    
+    TableCellRenderer getHeaderRenderer(int columnIndex);
     
     TableCellEditor getEditor(int columnIndex);
 }

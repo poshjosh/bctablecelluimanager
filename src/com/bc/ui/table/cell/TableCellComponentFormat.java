@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
+
+import java.awt.Component;
+import javax.swing.JTable;
 
 /**
- * @author Chinomso Bassey Ikwuagwu on Mar 3, 2017 10:31:26 AM
+ * @author Chinomso Bassey Ikwuagwu on Jun 20, 2017 2:18:53 AM
  */
-public interface ColumnWidths {
+public interface TableCellComponentFormat extends TableCellUIState, TableCellSize, TableCellComponentModel {
+
+    void format(JTable table, Component component, Object value, 
+            boolean isSelected, boolean hasFocus, int row, int column);
     
-    int getColumnPreferredWidthInChars(int columnIndex);
+    Object getEditedValue(Component component);
+
+    int getCurrentColumn();
+
+    int getCurrentRow();
 }

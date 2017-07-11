@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
+
+import java.awt.Component;
+import javax.swing.JTable;
 
 /**
- * @author Chinomso Bassey Ikwuagwu on Apr 7, 2017 2:07:57 PM
+ * @author Chinomso Bassey Ikwuagwu on Apr 7, 2017 5:09:02 PM
  */
-public interface Converter<I, O> {
+public interface TableCellUIState {
 
-    O convert(I input);
-    
-    I reverse(O input);
+    void updateState(JTable table, Component cellUI,
+            Object value, boolean isSelected, boolean hasFocus,
+            int row, int column);
 }

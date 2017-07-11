@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
 import java.awt.Dimension;
 import java.text.DateFormat;
 import javax.swing.JTable;
-import javax.swing.table.TableModel;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Mar 18, 2017 3:11:40 PM
@@ -32,7 +31,7 @@ public interface TableCellUIUpdater {
     
     TableCellUIUpdater cellSize(TableCellSize cellSize);
     
-    TableCellUIUpdater cellDisplayValue(TableCellDisplayValue cellDisplayValue);
+    TableCellUIUpdater cellDisplayValue(TableCellDisplayFormat cellDisplayValue);
     
     TableCellUIUpdater cellUIFactory(TableCellUIFactory cellUIFactory);
 
@@ -46,9 +45,5 @@ public interface TableCellUIUpdater {
     
     TableCellUIUpdater preferredSize(Dimension dim);
     
-    TableCellUIUpdater table(JTable table);
-    
-    TableCellUIUpdater tableModel(TableModel tableModel);
-    
-    JTable update();
+    void update(JTable table);
 }

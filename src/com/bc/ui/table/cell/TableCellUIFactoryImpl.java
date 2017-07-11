@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.bc.table.cellui;
+package com.bc.ui.table.cell;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.text.DateFormat;
 import java.util.Objects;
+import javax.swing.JLabel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -31,26 +33,49 @@ public class TableCellUIFactoryImpl implements TableCellUIFactory{
     
     private final TableCellSize tableCellSize;
     
-    private final TableCellDisplayValue tableCellDisplayValue;
+    private final TableCellDisplayFormat tableCellDisplayFormat;
     
-    public TableCellUIFactoryImpl(DateFormat dateFormat, int minCellHeight, int maxCellHeight) {
+    private final TableCellSizeManager tableCellSizeManager;
+    
+    public TableCellUIFactoryImpl(int minCellHeight, int maxCellHeight, DateFormat dateFormat) {
         this(new TableCellUIStateImpl(), 
-                new TableCellSizeImpl(minCellHeight, maxCellHeight),
-                new TableCellDisplayValueImpl(dateFormat)); 
+                new TableCellSizeImpl(new TableCellDisplayFormatImpl(dateFormat), minCellHeight, maxCellHeight),
+                new TableCellDisplayFormatImpl(dateFormat),
+                new TableCellSizeManagerImpl(new ColumnWidthsImpl())
+        ); 
     }
     
     public TableCellUIFactoryImpl(
             TableCellUIState tableCellUIState, 
             TableCellSize tableCellSize,
-            TableCellDisplayValue tableCellDisplayValue) {
+            TableCellDisplayFormat tableCellDisplayFormat,
+            TableCellSizeManager tableCellSizeManager
+    ) {
         this.tableCellUIState = Objects.requireNonNull(tableCellUIState);
         this.tableCellSize = Objects.requireNonNull(tableCellSize);
-        this.tableCellDisplayValue = Objects.requireNonNull(tableCellDisplayValue);
+        this.tableCellDisplayFormat = Objects.requireNonNull(tableCellDisplayFormat);
+        this.tableCellSizeManager = Objects.requireNonNull(tableCellSizeManager);
+    }
+
+    @Override
+    public TableCellComponentFormat getTableCellComponentFormat() {
+        return new TableCellComponentFormatImpl(
+                new TableCellComponentModelImpl(this.tableCellDisplayFormat),
+                this.tableCellUIState,
+                this.tableCellSize
+        );
     }
 
     @Override
     public Component getRendererComponent(int columnIndex) {
         return this.getComponent(columnIndex);
+    }
+
+    @Override
+    public Component getHeaderRendererComponent(int columnIndex) {
+        final JLabel textField = new JLabel();
+        textField.setBackground(Color.WHITE);
+        return textField;
     }
 
     @Override
@@ -66,6 +91,11 @@ public class TableCellUIFactoryImpl implements TableCellUIFactory{
     public TableCellComponentModel getRendererComponentModel(int columnIndex) {
         return this.getComponentModel(columnIndex);
     }
+
+    @Override
+    public TableCellComponentModel getHeaderRendererComponentModel(int columnIndex) {
+        return this.getComponentModel(columnIndex);
+    }
     
     @Override
     public TableCellComponentModel getEditorComponentModel(int columnIndex) {
@@ -73,12 +103,12 @@ public class TableCellUIFactoryImpl implements TableCellUIFactory{
     }
     
     public TableCellComponentModel getComponentModel(int columnIndex) {
-        return new TableCellComponentModelImpl(this.tableCellDisplayValue);
+        return new TableCellComponentModelImpl(this.tableCellDisplayFormat);
     }
     
     @Override
     public TableCellRenderer getRenderer(int columnIndex) {
-        return new TableCellRendererImpl(
+        return new TableCellRendererForComponent(
                 this.getRendererComponent(columnIndex),
                 this.getRendererComponentModel(columnIndex),
                 this.tableCellUIState, 
@@ -87,13 +117,28 @@ public class TableCellUIFactoryImpl implements TableCellUIFactory{
     }
 
     @Override
+    public TableCellRenderer getHeaderRenderer(int columnIndex) {
+        return new TableCellRendererForComponent(
+                this.getHeaderRendererComponent(columnIndex),
+                this.getHeaderRendererComponentModel(columnIndex),
+                this.tableCellUIState, 
+                this.tableCellSize
+        );
+    }
+
+    @Override
     public TableCellEditor getEditor(int columnIndex) {
-        return new TableCellEditorImpl(
+        return new TableCellEditorForComponent(
                 this.getEditorComponent(columnIndex),
                 this.getEditorComponentModel(columnIndex),
                 this.tableCellUIState, 
                 this.tableCellSize
         );
+    }
+
+    @Override
+    public TableCellSizeManager getTableCellSizeManager() {
+        return tableCellSizeManager;
     }
 
     public TableCellUIState getTableCellUIState() {
@@ -104,7 +149,7 @@ public class TableCellUIFactoryImpl implements TableCellUIFactory{
         return tableCellSize;
     }
 
-    public TableCellDisplayValue getTableCellDisplayValue() {
-        return tableCellDisplayValue;
+    public TableCellDisplayFormat getTableCellDisplayFormat() {
+        return tableCellDisplayFormat;
     }
 }
