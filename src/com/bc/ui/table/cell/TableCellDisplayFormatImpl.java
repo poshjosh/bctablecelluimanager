@@ -57,7 +57,7 @@ public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
                 try{
                     output = this.dateFormat.parse(sval);
                 }catch(ParseException e) {
-                    throw new RuntimeException();
+                    throw new RuntimeException(e);
                 }
             }
         }else if(columnClass == Boolean.class || columnClass == boolean.class) {
@@ -112,6 +112,13 @@ public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
         final Object output;
         if(Date.class.isAssignableFrom(columnClass)) {
             if(this.dateFormat != null && value != null) {
+                if(!(value instanceof Date)) {
+                    try{
+                        value = this.dateFormat.parse(value.toString());
+                    }catch(ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 output = new Date(((Date)value).getTime()) {
                     @Override
                     public String toString() {
