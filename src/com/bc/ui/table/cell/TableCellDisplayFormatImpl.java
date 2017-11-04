@@ -17,11 +17,11 @@
 package com.bc.ui.table.cell;
 
 import java.awt.Component;
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import javax.swing.JTable;
+import javax.swing.table.TableColumn;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Apr 8, 2017 12:25:35 AM
@@ -29,6 +29,8 @@ import javax.swing.JTable;
 public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
 
     private final DateFormat dateFormat;
+    
+    private JTable usedForDebugging;
     
     public TableCellDisplayFormatImpl() {
         this(null);
@@ -46,6 +48,88 @@ public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
         return this.fromDisplayValue(columnClass, displayValue, row, column);
     }
 
+    @Override
+    public Object fromDisplayValue(Class columnClass, Object displayValue, int row, int column) {
+        Object output = displayValue;
+        final String sval = displayValue == null ? null : displayValue.toString();
+        if(displayValue == null || sval == null || sval.isEmpty()) {
+            output = null;
+        }else if(Date.class.isAssignableFrom(columnClass)) {
+            if(this.dateFormat != null && !(displayValue instanceof Date)) {
+                try{
+                    output = this.dateFormat.parse(sval);
+                }catch(ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }else{
+            output = displayValue;
+        }
+        return output;
+    }
+
+    @Override
+    public Object toDisplayValue(JTable table, Component component, Object value, 
+            boolean isSelected, boolean hasFocus, int row, int column) {
+        
+        final Class columnClass = this.getColumnClassWithHeaderRowAtMinusOne(table, row, column);
+        
+        return this.toDisplayValue(columnClass, value, row, column);
+    }
+    
+    public Class getColumnClassWithHeaderRowAtMinusOne(JTable table, int row, int column) {
+        this.usedForDebugging = table;
+        return row == -1 ? String.class : table.getColumnClass(column);
+    }
+
+    @Override
+    public Object toDisplayValue(Class columnClass, Object value, int row, int column) {
+        final Object output;
+        if(Date.class.isAssignableFrom(columnClass)) {
+            if(this.dateFormat != null && value != null) {
+                if(!(value instanceof Date)) {
+                    try{
+                        value = this.dateFormat.parse(value.toString());
+                    }catch(ParseException e) {
+//                        this.print(columnClass, value, row, column);
+                        throw new RuntimeException(e);
+                    }
+                }
+                output = new Date(((Date)value).getTime()) {
+                    @Override
+                    public String toString() {
+                        return dateFormat.format(this);
+                    }
+                };
+            }else{
+                output = value;
+            }
+        }else{
+            output = value;
+        }
+        return output;
+    }
+    
+    private void print(Class columnClass, Object value, int row, int column) {
+        if(usedForDebugging == null) {
+            return;
+        } 
+        final int count = usedForDebugging.getColumnCount();
+        System.out.println("Column count: " + count + ", row: " + row + ", column: " + column + ", class: " + columnClass.getName());
+        System.out.println("Value: " + value);
+        for(int i=0; i<count; i++) {
+            final String name = usedForDebugging.getColumnName(i);
+            final Class cls = usedForDebugging.getColumnClass(i);
+            final TableColumn col = usedForDebugging.getColumn(name);
+            final int modelIndex = col.getModelIndex();
+            final Object header = col.getHeaderValue();
+            final Object id = col.getIdentifier();
+            System.out.println("Column: " + name + ", class: " + cls.getName()+", model index: " + modelIndex);
+        }
+    }
+}
+/**
+ * 
     @Override
     public Object fromDisplayValue(Class columnClass, Object displayValue, int row, int column) {
         Object output = displayValue;
@@ -86,51 +170,12 @@ public class TableCellDisplayFormatImpl implements TableCellDisplayFormat {
             }
         }else if(columnClass == BigDecimal.class) {
             if(!(displayValue instanceof BigDecimal)) {
-                output = BigDecimal.valueOf(Double.parseDouble(sval));
+                output = new BigDecimal(sval);
             }
         }else{
             output = displayValue;
         }
         return output;
     }
-
-    @Override
-    public Object toDisplayValue(JTable table, Component component, Object value, 
-            boolean isSelected, boolean hasFocus, int row, int column) {
-        
-        final Class columnClass = this.getColumnClassWithHeaderRowAtMinusOne(table, row, column);
-        
-        return this.toDisplayValue(columnClass, value, row, column);
-    }
-    
-    public Class getColumnClassWithHeaderRowAtMinusOne(JTable table, int row, int column) {
-        return row == -1 ? String.class : table.getColumnClass(column);
-    }
-
-    @Override
-    public Object toDisplayValue(Class columnClass, Object value, int row, int column) {
-        final Object output;
-        if(Date.class.isAssignableFrom(columnClass)) {
-            if(this.dateFormat != null && value != null) {
-                if(!(value instanceof Date)) {
-                    try{
-                        value = this.dateFormat.parse(value.toString());
-                    }catch(ParseException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                output = new Date(((Date)value).getTime()) {
-                    @Override
-                    public String toString() {
-                        return dateFormat.format(this);
-                    }
-                };
-            }else{
-                output = value;
-            }
-        }else{
-            output = value;
-        }
-        return output;
-    }
-}
+ * 
+ */

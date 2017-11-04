@@ -107,7 +107,8 @@ public class TableCellSizeImpl implements TableCellSize {
             final float cHeight = linesInCell * fontMetrics.getHeight();
 
 //System.out.println("@["+row+':'+column+"] text len: "+sval.length()+", cell width: "+cellWidth+
-//        ", lines in cell: "+linesInCell+", cell height: "+cHeight+" "+this.getClass().getName());            
+//        ", lines in cell: "+linesInCell+", cell height: "+cHeight+" "+this.getClass().getName());
+
             if(cHeight < minRowHeight) {
                 cellHeight = minRowHeight;
             }else if(cHeight > maxRowHeight) {

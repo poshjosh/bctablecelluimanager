@@ -46,7 +46,7 @@ public class TableColumnAdjuster implements PropertyChangeListener, TableModelLi
 	private boolean isColumnDataIncluded;
 	private boolean isOnlyAdjustLarger;
 	private boolean isDynamicAdjustment;
-	private Map<TableColumn, Integer> columnSizes = new HashMap<TableColumn, Integer>();
+	private final Map<TableColumn, Integer> columnSizes = new HashMap<>();
 
 	/*
 	 *  Specify the table and use default spacing
@@ -94,7 +94,7 @@ public class TableColumnAdjuster implements PropertyChangeListener, TableModelLi
 
 		int columnHeaderWidth = getColumnHeaderWidth( column );
 		int columnDataWidth   = getColumnDataWidth( column );
-		int preferredWidth	= Math.max(columnHeaderWidth, columnDataWidth);
+		int preferredWidth    = Math.max(columnHeaderWidth, columnDataWidth);
 
 		updateTableColumn(column, preferredWidth);
 	}

@@ -68,13 +68,13 @@ public class TableCellSizeManagerImpl implements TableCellSizeManager {
             int rowHeight = 0;
             
             for (int column = 0; column < table.getColumnCount(); column++) {
-                
+
                 final Component comp = table.prepareRenderer(table.getCellRenderer(row, column), row, column);
                 
 //                rowHeight = Math.max(rowHeight, Math.max(comp.getSize().height, comp.getPreferredSize().height));
                 rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
             }
-//System.out.println("====================================== Row height: " + rowHeight + " " + this.getClass().getName());                    
+//System.out.println("\t\tRow height: " + rowHeight + " " + this.getClass().getName());                    
 
 //            final float lines = rowHeight / lineHeight;
 //            rowHeight = Math.round(rowHeight + (lineHeight * (lines / 2.0f)));

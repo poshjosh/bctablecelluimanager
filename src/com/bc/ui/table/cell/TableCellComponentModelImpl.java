@@ -17,12 +17,18 @@
 package com.bc.ui.table.cell;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.ItemSelectable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.text.JTextComponent;
 
@@ -46,35 +52,62 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         
         Objects.requireNonNull(component);
         
-        final Object value = this.getValue(component);
+        final Object value = this.getValue(component, null);
+        Objects.requireNonNull(value, () -> this.getUnsupportedComponentMsg(component));
         
         final Object output = this.cellDisplayFormat.fromDisplayValue(table, component, value, row, column);
                 
         return output;        
     }
     
-    public Object getValue(Component component) {
+    public Object getValue(Component component, Object outputIfNone) {
+        
+        if(component instanceof JScrollPane) {
+            component = ((JScrollPane)component).getViewport().getView();
+        }
         
         Objects.requireNonNull(component);
         
-        final Object value;
-        if(component instanceof JTextComponent) {
+        Object value;
+        
+        if(component instanceof JPasswordField) {
+            value = ((JPasswordField)component).getPassword();
+        }else if(component instanceof JFormattedTextField) {
+            value = ((JFormattedTextField)component).getValue();
+        }else if(component instanceof JTextComponent) {
             value = ((JTextComponent)component).getText();
         }else if(component instanceof JLabel) {
             value = ((JLabel)component).getText();
         }else if(component instanceof AbstractButton) {
             value = ((AbstractButton)component).isSelected();
-        }else if(component instanceof ItemSelectable) {
-            final Object [] selected = ((ItemSelectable)component).getSelectedObjects();
+        }else if(component instanceof JComboBox) {
+            final Object [] selected = ((JComboBox)component).getSelectedObjects();
             value = selected == null || selected.length == 0 ? null : selected[0];
         }else if(component instanceof JList) {
             final Object selected = ((JList)component).getSelectedValue();
             value = selected == null ? null : selected;
+        }else if(component instanceof Container) {
+            
+            final Container container = (Container)component;
+            final int count = container.getComponentCount();
+            final Map map = new LinkedHashMap(count * 2, 0.75f);
+            for(int i=0; i<count; i++) {
+                final Component c = container.getComponent(i);
+                if(c.getName() != null) {
+                    map.put(c.getName(), this.getValue(c, null));
+                }
+            }
+            
+            value = map;
+            
         }else{
-            throw new UnsupportedOperationException("Unsupported UI component type: "+component.getClass().getName());
+            
+            value = outputIfNone;
         }
         
-        return value;        
+        value = this.format(value);
+//System.out.println(component.getClass().getName() + ", value: " + value + ". @" + this.getClass());        
+        return value;
     }
     
     @Override
@@ -88,11 +121,25 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         this.setValue(component, value);
     }
 
-    public void setValue(Component component, Object value) {
+    public Object setValue(Component component, Object value) {
+        
+        if(component instanceof JScrollPane) {
+            component = ((JScrollPane)component).getViewport().getView();
+        }
         
         Objects.requireNonNull(component);
         
-        if(component instanceof JTextComponent) {
+        value = this.format(value);
+        
+        if(component instanceof JPasswordField) {
+            if(value instanceof char[]) {
+                ((JPasswordField)component).setText(new String((char[])value));
+            }else{
+                ((JPasswordField)component).setText(value==null?null:value.toString());
+            }
+        }else if(component instanceof JFormattedTextField) {
+            ((JFormattedTextField)component).setValue(value);
+        }else if(component instanceof JTextComponent) {
             ((JTextComponent)component).setText(value==null?null:String.valueOf(value));
         }else if(component instanceof JLabel) {
             ((JLabel)component).setText(value==null?null:String.valueOf(value));
@@ -103,7 +150,20 @@ public class TableCellComponentModelImpl implements TableCellComponentModel {
         }else if(component instanceof JList) {
             ((JList)component).setSelectedValue(value, true);
         }else{
-            throw new UnsupportedOperationException("Unsupported UI component type: "+component.getClass().getName());
+            throw new UnsupportedOperationException(this.getUnsupportedComponentMsg(component));
         }
+        return value;
+    }
+    
+    private String getUnsupportedComponentMsg(Component component) {
+        return "Unsupported UI component type: "+component.getClass().getName();
+    }
+
+    public Object format(Object value) {
+        if(value instanceof String) {
+            final String sval = (String)value;
+            value = sval.isEmpty() ? null : sval;
+        }
+        return value;
     }
 }
